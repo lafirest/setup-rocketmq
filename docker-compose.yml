@@ -1,0 +1,42 @@
+version: '3.9'
+services:
+  mqnamesrv:
+    image: apache/rocketmq:4.9.4
+    container_name: mqnamesrv
+    ports:
+      - 9876:9876
+    volumes:
+      - ./logs:/opt/logs
+      - ./store:/opt/store
+    command: ./mqnamesrv 
+    networks:
+        rmq:
+          aliases:
+            - mqnamesrv
+
+  mqbroker:
+    image: apache/rocketmq:4.9.4 
+    container_name: mqbroker
+    ports:
+      - 10909:10909
+      - 10911:10911
+    volumes:
+      - ./logs:/opt/logs
+      - ./store:/opt/store
+      - ./conf/broker.conf:/etc/rocketmq/broker.conf
+    environment:
+        NAMESRV_ADDR: "mqnamesrv:9876"
+        JAVA_OPTS: " -Duser.home=/opt"
+        JAVA_OPT_EXT: "-server -Xms1024m -Xmx1024m -Xmn1024m"
+    command: ./mqbroker -c /etc/rocketmq/broker.conf
+    depends_on:
+      - mqnamesrv
+    networks:
+      rmq:
+        aliases:
+          - mqbroker
+
+networks:
+  rmq:
+    name: rmq
+    driver: bridge

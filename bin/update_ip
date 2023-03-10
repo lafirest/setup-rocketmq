@@ -1,0 +1,5 @@
+#!/bin/sh
+
+FILE=$1
+HOST_IP=$(ipconfig getifaddr en0)
+sed -i "" "s/HOST_IP/$HOST_IP/" $FILE
